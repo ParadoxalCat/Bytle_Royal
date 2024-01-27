@@ -93,7 +93,6 @@ class Client(UserClient):
     def get_my_inventory(self, world):
         return world.inventory_manager.get_inventory(self.company)
 
-
     def generate_moves_around(self, tile, world):
         moves = []
         tile_up = world.game_map[tile.y - 1][tile.x]
