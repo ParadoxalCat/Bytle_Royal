@@ -1,7 +1,7 @@
 {
 	"players": [
 		{
-			"id": "d2e43fb9-bb8a-4957-b457-4e95c023f1c3",
+			"id": "19b39829-7a2f-4e38-838b-bfb2d2e8be3a",
 			"object_type": 3,
 			"state": "idle",
 			"functional": true,
@@ -13,17 +13,17 @@
 				10
 			],
 			"avatar": {
-				"id": "3fdfff0a-e295-4382-889c-bed607fe4bc3",
+				"id": "38d457ba-7ee6-49c5-b58a-c39c94908029",
 				"object_type": 4,
 				"state": "idle",
 				"company": 1,
-				"score": 140,
-				"science_points": 20,
+				"score": 180,
+				"science_points": 60,
 				"position": {
-					"id": "be292bec-e82d-467b-9653-82e85818eac6",
+					"id": "d682c1e5-106f-4b2e-bb35-ca1683a18e7e",
 					"object_type": 6,
 					"state": "idle",
-					"x": 4,
+					"x": 2,
 					"y": 1
 				},
 				"movement_speed": 1,
@@ -42,7 +42,7 @@
 					"Trap Defusal": false
 				},
 				"dynamite_active_ability": {
-					"id": "42c8ede3-d110-44cb-bed6-bb4726f1bb40",
+					"id": "73fea6a0-6c45-4eba-bf48-93ad8a0dc74a",
 					"object_type": 28,
 					"state": "idle",
 					"cooldown": 3,
@@ -50,7 +50,7 @@
 					"is_usable": true
 				},
 				"landmine_active_ability": {
-					"id": "69fde982-c4c8-4ff7-8574-5021075ae487",
+					"id": "e107a3c8-2cab-46ed-adfd-c7d352353d86",
 					"object_type": 26,
 					"state": "idle",
 					"cooldown": 4,
@@ -58,7 +58,7 @@
 					"is_usable": true
 				},
 				"emp_active_ability": {
-					"id": "2d32d4cc-6953-4a5c-ae4b-59aeeaeb6d11",
+					"id": "0c3fe922-cb18-4308-be48-4c0b2d71aa30",
 					"object_type": 27,
 					"state": "idle",
 					"cooldown": 4,
@@ -66,7 +66,7 @@
 					"is_usable": true
 				},
 				"defusal_active_ability": {
-					"id": "142e41f9-9d12-4763-a6f2-08e8e7e92585",
+					"id": "ef654054-d8c1-4b02-982f-d0be6bcbb6e3",
 					"object_type": 34,
 					"state": "idle",
 					"cooldown": 2,
@@ -76,7 +76,7 @@
 			}
 		},
 		{
-			"id": "80b879c2-f549-4068-bd21-840f0130d045",
+			"id": "285199d8-4ccd-4f46-ab56-bb884a73908d",
 			"object_type": 3,
 			"state": "idle",
 			"functional": true,
@@ -84,22 +84,22 @@
 			"team_name": "The Real Jean",
 			"file_name": null,
 			"actions": [
-				3,
+				5,
 				10
 			],
 			"avatar": {
-				"id": "58843140-6fb1-4e5a-b2e3-7c87d2c13b65",
+				"id": "37b6da6c-6d0a-4fc1-82e3-8e8bb1d74a33",
 				"object_type": 4,
-				"state": "idle",
+				"state": "moving",
 				"company": 2,
-				"score": 200,
-				"science_points": 50,
+				"score": 180,
+				"science_points": 60,
 				"position": {
-					"id": "e3720eb9-8aa3-42a5-8f0a-3bc9d4699f69",
+					"id": "47fbfba6-2773-4be6-9d6f-6aad5189294f",
 					"object_type": 6,
 					"state": "idle",
 					"x": 12,
-					"y": 12
+					"y": 10
 				},
 				"movement_speed": 1,
 				"drop_rate": 1,
@@ -117,7 +117,7 @@
 					"Trap Defusal": false
 				},
 				"dynamite_active_ability": {
-					"id": "382122bd-bb7d-406d-827d-fe2af1683386",
+					"id": "186083fa-63a9-45c8-93ad-c243b0b2b0be",
 					"object_type": 28,
 					"state": "idle",
 					"cooldown": 3,
@@ -125,7 +125,7 @@
 					"is_usable": true
 				},
 				"landmine_active_ability": {
-					"id": "36b5fb7c-e286-4a9b-89eb-391e453dd2da",
+					"id": "6fc4e4d2-827a-4f23-9b8a-451cb07a1e12",
 					"object_type": 26,
 					"state": "idle",
 					"cooldown": 4,
@@ -133,7 +133,7 @@
 					"is_usable": true
 				},
 				"emp_active_ability": {
-					"id": "cd7d5c0e-0577-4cff-92b9-0cfe44207a92",
+					"id": "56e22aaf-4ea2-456e-aecb-c9d5c45a3ae8",
 					"object_type": 27,
 					"state": "idle",
 					"cooldown": 4,
@@ -141,7 +141,7 @@
 					"is_usable": true
 				},
 				"defusal_active_ability": {
-					"id": "cb0597bb-c166-423d-b6a9-93bcc78f2a7f",
+					"id": "217a351e-571d-43d3-bf8d-74c4a6f93912",
 					"object_type": 34,
 					"state": "idle",
 					"cooldown": 2,
