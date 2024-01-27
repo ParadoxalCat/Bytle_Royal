@@ -1,15 +1,13 @@
 import random
 
 from game.client.user_client import UserClient
-from game.common.avatar import Avatar
 from game.common.enums import *
-from game.common.map.game_board import GameBoard
-from game.utils.vector import Vector
 
 
 class State(Enum):
     MINING = auto()
     SELLING = auto()
+    TEST = auto()
 
 
 class Client(UserClient):
@@ -22,8 +20,8 @@ class Client(UserClient):
         Allows the team to set a team name.
         :return: Your team name
         """
-        return 'Error 413'
-    
+        return 'The Real Jean'
+
     def first_turn_init(self, world, avatar):
         """
         This is where you can put setup for things that should happen at the beginning of the first turn
@@ -34,7 +32,7 @@ class Client(UserClient):
         self.base_position = world.get_objects(self.my_station_type)[0][0]
 
     # This is where your AI will decide what to do
-    def take_turn(self, turn: int, actions: [ActionType], world: GameBoard, avatar: Avatar):
+    def take_turn(self, turn, actions, world, avatar):
         """
         This is where your AI will decide what to do.
         :param turn:        The current turn of the game.
@@ -43,21 +41,23 @@ class Client(UserClient):
         """
         if turn == 1:
             self.first_turn_init(world, avatar)
-            
-        current_tile = world.game_map[avatar.position.y][avatar.position.x] # set current tile to the tile that I'm standing on
-        
+
+        current_tile = world.game_map[avatar.position.y][
+            avatar.position.x]  # set current tile to the tile that I'm standing on
+
         # If I start the turn on my station, I should...
         if current_tile.occupied_by.object_type == self.my_station_type:
             # buy Improved Mining tech if I can...
-            if avatar.science_points >= avatar.get_tech_info('Improved Drivetrain').cost and not avatar.is_researched('Improved Drivetrain'):
+            if avatar.science_points >= avatar.get_tech_info('Improved Drivetrain').cost and not avatar.is_researched(
+                    'Improved Drivetrain'):
                 return [ActionType.BUY_IMPROVED_DRIVETRAIN]
             # otherwise set my state to mining
             self.current_state = State.MINING
-            
+
         # If I have at least 5 items in my inventory, set my state to selling
         if len([item for item in self.get_my_inventory(world) if item is not None]) >= 5:
             self.current_state = State.SELLING
-            
+
         # Make action decision for this turn
         if self.current_state == State.SELLING:
             # actions = [ActionType.MOVE_LEFT if self.company == Company.TURING else ActionType.MOVE_RIGHT] # If I'm selling, move towards my base
@@ -68,8 +68,9 @@ class Client(UserClient):
                 actions = [ActionType.MINE]
             else:
                 # If I'm mining and I'm not standing on an ore, move randomly
-                actions = [random.choice([ActionType.MOVE_LEFT, ActionType.MOVE_RIGHT, ActionType.MOVE_UP, ActionType.MOVE_DOWN])]
-                
+                actions = [random.choice(
+                    [ActionType.MOVE_LEFT, ActionType.MOVE_RIGHT, ActionType.MOVE_UP, ActionType.MOVE_DOWN])]
+
         return actions
 
     def generate_moves(self, start_position, tiles):
@@ -96,3 +97,60 @@ class Client(UserClient):
     
     def get_my_inventory(self, world):
         return world.inventory_manager.get_inventory(self.company)
+
+    def get_my_inventory(self, world):
+        return world.inventory_manager.get_inventory(self.company)
+
+    def generate_moves_around(self, tile, world):
+        moves = []
+        tile_up = world.game_map[tile.y - 1][tile.x]
+        tile_down = world.game_map[tile.y + 1][tile.x]
+        tile_right = world.game_map[tile.y][tile.x + 1]
+        tile_left = world.game_map[tile.y][tile.x - 1]
+
+        if not tile_up.is_occupied_by_object_type(ObjectType.WALL):
+            moves.append(ActionType.MOVE_UP)
+        if not tile_down.is_occupied_by_object_type(ObjectType.WALL):
+            moves.append(ActionType.MOVE_DOWN)
+        if not tile_right.is_occupied_by_object_type(ObjectType.WALL):
+            moves.append(ActionType.MOVE_RIGHT)
+        if not tile_left.is_occupied_by_object_type(ObjectType.WALL):
+            moves.append(ActionType.MOVE_DOWN)
+
+        return moves
+
+    def generate_tiles_around(self, tile, world):
+        tiles = []
+        tile_up = world.game_map[tile.y - 1][tile.x]
+        tile_down = world.game_map[tile.y + 1][tile.x]
+        tile_right = world.game_map[tile.y][tile.x + 1]
+        tile_left = world.game_map[tile.y][tile.x - 1]
+
+        if not tile_up.is_occupied_by_object_type(ObjectType.WALL):
+            tiles.append(tile_up)
+        if not tile_down.is_occupied_by_object_type(ObjectType.WALL):
+            tiles.append(tile_down)
+        if not tile_right.is_occupied_by_object_type(ObjectType.WALL):
+            tiles.append(tile_right)
+        if not tile_left.is_occupied_by_object_type(ObjectType.WALL):
+            tiles.append(tile_left)
+
+        return tiles
+
+    def generate_tiles_to_target(self, world, current_tile, target, path=[]):
+        path.append(current_tile)
+        if current_tile.occupied_by(target):
+            return path
+        shortest = None
+
+        tiles_to_search = self.generate_tiles_around(current_tile, world)
+
+        for tile in tiles_to_search:
+            if tile in path:
+                continue
+            x = self.generate_tiles_to_target(tile, target, path)
+            if shortest is None or len(x) < len(shortest):
+                shortest = x
+
+        return shortest
+
