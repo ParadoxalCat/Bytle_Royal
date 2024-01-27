@@ -1,7 +1,9 @@
 import random
 
 from game.client.user_client import UserClient
+from game.common.avatar import Avatar
 from game.common.enums import *
+from game.common.map.game_board import GameBoard
 from game.utils.vector import Vector
 
 
@@ -20,7 +22,7 @@ class Client(UserClient):
         Allows the team to set a team name.
         :return: Your team name
         """
-        return 'The Real Jean'
+        return 'Error 413'
     
     def first_turn_init(self, world, avatar):
         """
@@ -32,7 +34,7 @@ class Client(UserClient):
         self.base_position = world.get_objects(self.my_station_type)[0][0]
 
     # This is where your AI will decide what to do
-    def take_turn(self, turn, actions, world, avatar):
+    def take_turn(self, turn: int, actions: [ActionType], world: GameBoard, avatar: Avatar):
         """
         This is where your AI will decide what to do.
         :param turn:        The current turn of the game.
@@ -89,3 +91,7 @@ class Client(UserClient):
     
     def get_my_inventory(self, world):
         return world.inventory_manager.get_inventory(self.company)
+
+    def followMoves(self, tiles):
+        moves = []
+        currentPostion = Avatar.position
