@@ -61,7 +61,7 @@ class Client(UserClient):
         # Make action decision for this turn
         if self.current_state == State.SELLING:
             # actions = [ActionType.MOVE_LEFT if self.company == Company.TURING else ActionType.MOVE_RIGHT] # If I'm selling, move towards my base
-            actions = self.generate_moves(avatar.position, self.base_position, turn % 2 == 0)
+            actions = self.generate_moves(avatar.position, self.base_position)
         else:
             if current_tile.occupied_by.object_type == ObjectType.ORE_OCCUPIABLE_STATION:
                 # If I'm mining and I'm standing on an ore, mine it
@@ -72,7 +72,7 @@ class Client(UserClient):
                 
         return actions
 
-    def generate_moves(self, start_position, end_position, vertical_first):
+    def generate_moves(self, start_position, tiles):
         """
         This function will generate a path between the start and end position. It does not consider walls and will
         try to walk directly to the end position.
@@ -81,17 +81,18 @@ class Client(UserClient):
         :param vertical_first:      True if the path should be vertical first, False if the path should be horizontal first
         :return:                    Path represented as a list of ActionType
         """
-        dx = end_position.x - start_position.x
-        dy = end_position.y - start_position.y
-        
-        horizontal = [ActionType.MOVE_LEFT] * -dx if dx < 0 else [ActionType.MOVE_RIGHT] * dx
-        vertical = [ActionType.MOVE_UP] * -dy if dy < 0 else [ActionType.MOVE_DOWN] * dy
-        
-        return vertical + horizontal if vertical_first else horizontal + vertical
+
+        moves = []
+        for tile in tiles:
+
+            dx = tile.x - start_position.x
+            dy = tile.y - start_position.y
+
+            horizontal = [ActionType.MOVE_LEFT] * -dx if dx < 0 else [ActionType.MOVE_RIGHT] * dx
+            vertical = [ActionType.MOVE_UP] * -dy if dy < 0 else [ActionType.MOVE_DOWN] * dy
+            moves.append(vertical + horizontal)
+
+        return moves
     
     def get_my_inventory(self, world):
         return world.inventory_manager.get_inventory(self.company)
-
-    def followMoves(self, tiles):
-        moves = []
-        currentPostion = Avatar.position
