@@ -6,7 +6,6 @@ from game.common.enums import *
 from game.common.map.game_board import GameBoard
 from game.utils.vector import Vector
 
-
 class State(Enum):
     MINING = auto()
     SELLING = auto()
