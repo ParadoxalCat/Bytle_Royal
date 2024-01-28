@@ -52,6 +52,7 @@ class Client(UserClient):
 
         if len([item for item in self.get_my_inventory(world) if item is not None]) >= 46:
             self.current_state = State.RETURN
+            #poop
         elif current_tile.is_occupied_by_object_type(ObjectType.ORE_OCCUPIABLE_STATION):
             self.current_state = State.MINING
         else:
