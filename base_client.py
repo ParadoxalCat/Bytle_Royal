@@ -11,7 +11,8 @@ class State(Enum):
     MINING = auto()
     SELLING = auto()
     INVESTING = auto()
-    RETURN = auto()
+    RETURN_HOME = auto()
+    RETURN_MINE = auto()
     TEST = auto()
 
 
@@ -51,17 +52,13 @@ class Client(UserClient):
             avatar.position.x]  # set current tuple to the tuple that I'm standing on
 
         if len([item for item in self.get_my_inventory(world) if item is not None]) >= 46:
-            self.current_state = State.RETURN
-            #poop
+            self.current_state = State.RETURN_HOME
         elif current_tile.is_occupied_by_object_type(ObjectType.ORE_OCCUPIABLE_STATION):
             self.current_state = State.MINING
         else:
             self.current_state = State.TEST
 
-
-        # Make action decision for this turn
         if self.current_state == State.SELLING:
-            # actions = [ActionType.MOVE_LEFT if self.company == Company.TURING else ActionType.MOVE_RIGHT] # If I'm selling, move towards my base
             actions = self.generate_moves(avatar.position, self.base_position, turn % 2 == 0)
         elif self.current_state == State.TEST:
             tuples = self.astar(world, avatar.position, self.look_for_ore(avatar, world))
@@ -70,16 +67,13 @@ class Client(UserClient):
                 print(actions)
             except IndexError:
                 self.current_state = State.MINING
-                print("oopies poopies")
-        else:
-            if current_tile.occupied_by.object_type == ObjectType.ORE_OCCUPIABLE_STATION:
-                # If I'm mining and I'm standing on an ore, mine it
-                actions = [ActionType.MINE]
-                self.current_state = State.TEST
-            else:
-                # If I'm mining and I'm not standing on an ore, move randomly
-                actions = [random.choice(
-                    [ActionType.MOVE_LEFT, ActionType.MOVE_RIGHT, ActionType.MOVE_UP, ActionType.MOVE_DOWN])]
+                print("index error")
+        elif self.current_state == State.RETURN:
+            try:
+                 actions = self.moveVector(avatar.position, self.astar(world, avatar.position, Vector(self.base_position))[1])
+            except IndexError:
+                print("index error")
+
 
         return actions
 
