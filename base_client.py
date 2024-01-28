@@ -293,3 +293,54 @@ class Client(UserClient):
 
     def manHatanDistanc(self, nodex, nodey, avatar):
         return abs(avatar.position.x - nodex) + abs(avatar.position.y - nodey)
+    
+    def findNearestOre(self, world:GameBoard, avatar : Avatar):
+        xToCheck = -4
+        yToCheck = -4
+        nearestOre=[1000, 1000]
+        # print("our position", avatar.position)
+        while (xToCheck < 4):
+            yToCheck = -4
+            while (yToCheck < 4):
+                # print((((avatar.position.x + xToCheck) > 0) and ((avatar.position.y + yToCheck)>0)))
+                if ((((avatar.position.x + xToCheck) >= 0) and ((avatar.position.y + yToCheck)>=0)) and (((avatar.position.x + xToCheck) <= 13) and ((avatar.position.y + yToCheck) <= 13))):
+                    # print((avatar.position.y + yToCheck) , (avatar.position.x + xToCheck))
+                    tileToCheck = world.game_map[avatar.position.y + yToCheck][avatar.position.x + xToCheck]
+                    if (tileToCheck.is_occupied_by_object_type(ObjectType.ORE_OCCUPIABLE_STATION)):
+                        newList = [(avatar.position.y + yToCheck), (avatar.position.x + xToCheck)]
+                        print("new distance", self.findDistanceFromPlayer(newList, avatar), "old Distance", self.findDistanceFromPlayer(nearestOre, avatar), "location", newList)
+                        if self.isWall(newList, avatar, world):
+                             if (self.findDistanceFromPlayer(newList, avatar) <= self.findDistanceFromPlayer(nearestOre, avatar)):
+                                nearestOre = [(avatar.position.y + yToCheck), (avatar.position.x + xToCheck)]
+                yToCheck = yToCheck + 1
+            xToCheck = xToCheck + 1
+        return nearestOre
+
+    def findDistanceFromPlayer(self, cord:list, avatar : Avatar):
+        return abs(avatar.position.y - cord[0])+abs(avatar.position.x - cord[1])
+
+    def isWall(self, cord: list, avatar: Avatar, world : GameBoard):
+        yToIterate = avatar.position.y
+        xToIterate = avatar.position.x
+        while(xToIterate < cord[1]):
+            xToIterate+=1
+            if (world.game_map[yToIterate][xToIterate].is_occupied_by_object_type(ObjectType.WALL)):
+                print("isWall = true")
+                return False
+        while(xToIterate > cord[1]):
+            xToIterate-=1
+            if (world.game_map[yToIterate][xToIterate].is_occupied_by_object_type(ObjectType.WALL)):
+                print("isWall = true")
+                return False
+        while(yToIterate < cord[0]):
+            yToIterate+=1
+            if (world.game_map[yToIterate][xToIterate].is_occupied_by_object_type(ObjectType.WALL)):
+                print("isWall = true")
+                return False
+        while(yToIterate > cord[0]):
+            yToIterate-=1
+            if (world.game_map[yToIterate][xToIterate].is_occupied_by_object_type(ObjectType.WALL)):
+                print("isWall = true")
+                return False
+        print("isWall = False")
+        return True
