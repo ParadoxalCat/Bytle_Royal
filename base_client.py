@@ -1,7 +1,10 @@
 import random
 
 from game.client.user_client import UserClient
+from game.common.avatar import Avatar
 from game.common.enums import *
+from game.common.map.game_board import GameBoard
+from game.utils.vector import Vector
 
 
 class State(Enum):
@@ -43,7 +46,7 @@ class Client(UserClient):
             self.first_turn_init(world, avatar)
 
         current_tile = world.game_map[avatar.position.y][
-            avatar.position.x]  # set current tile to the tile that I'm standing on
+            avatar.position.x]  # set current tuple to the tuple that I'm standing on
 
         # If I start the turn on my station, I should...
         if current_tile.occupied_by.object_type == self.my_station_type:
@@ -58,10 +61,14 @@ class Client(UserClient):
         if len([item for item in self.get_my_inventory(world) if item is not None]) >= 5:
             self.current_state = State.SELLING
 
+        self.current_state = State.TEST
         # Make action decision for this turn
         if self.current_state == State.SELLING:
             # actions = [ActionType.MOVE_LEFT if self.company == Company.TURING else ActionType.MOVE_RIGHT] # If I'm selling, move towards my base
             actions = self.generate_moves(avatar.position, self.base_position, turn % 2 == 0)
+        elif State.TEST:
+            tuples = self.astar(world, avatar.position, Vector(2, 3))
+            actions = self.moveVector(avatar.position, tuples[1])
         else:
             if current_tile.occupied_by.object_type == ObjectType.ORE_OCCUPIABLE_STATION:
                 # If I'm mining and I'm standing on an ore, mine it
@@ -128,6 +135,49 @@ class Client(UserClient):
             tiles.append(tile_left)
 
         return tiles
+    def generate_tuples_around(self, tuple, world):
+        tuples = []
+        tuple_up = (tuple[0], tuple[1] - 1)
+        tuple_down = (tuple[0], tuple[1] + 1)
+        tuple_right = (tuple[0] + 1, tuple[1])
+        tuple_left = (tuple[0] - 1, tuple[1])
+
+        if not world.game_map[tuple_up[0]][tuple_up[1]].is_occupied_by_object_type(ObjectType.WALL):
+            tuples.append(tuple_up)
+        if not world.game_map[tuple_down[0]][tuple_down[1]].is_occupied_by_object_type(ObjectType.WALL):
+            tuples.append(tuple_down)
+        if not world.game_map[tuple_right[0]][tuple_right[1]].is_occupied_by_object_type(ObjectType.WALL):
+            tuples.append(tuple_right)
+        if not world.game_map[tuple_left[0]][tuple_left[1]].is_occupied_by_object_type(ObjectType.WALL):
+            tuples.append(tuple_left)
+
+        return tuples
+    def generate_vectors_around(self, vector, world):
+        tiles = []
+
+        tile_up = world.game_map[vector.y - 1][vector.x]
+        tile_down = world.game_map[vector.y + 1][vector.x]
+        tile_right = world.game_map[vector.y][vector.x + 1]
+        tile_left = world.game_map[vector.y][vector.x - 1]
+
+        if not tile_up.is_occupied_by_object_type(ObjectType.WALL):
+            tile_up = Vector(vector.y - 1, vector.x)
+            if 13 >= tile_up.x >= 0 or 13 >= tile_up.y >= 0:
+                tiles.append((0, tile_up.y))
+        if not tile_down.is_occupied_by_object_type(ObjectType.WALL):
+            tile_down = Vector(vector.y + 1, vector.x)
+            if 13 >= tile_down.x >= 0 or 13 >= tile_down.y >= 0:
+                tiles.append((0, tile_down.y))
+        if not tile_right.is_occupied_by_object_type(ObjectType.WALL):
+            tile_right = Vector(vector.y, vector.x + 1)
+            if 13 >= tile_right.x >= 0 or 13 >= tile_right.y >= 0:
+                tiles.append((tile_right.x, 0))
+        if not tile_left.is_occupied_by_object_type(ObjectType.WALL):
+            tile_left = Vector(vector.y, vector.x - 1)
+            if 13 >= tile_left.x >= 0 or 13 >= tile_left.y >= 0:
+                tiles.append((tile_left.x, 0))
+        return tiles
+
 
     def generate_tiles_to_target(self, world, current_tile, target, path=[]):
         path.append(current_tile)
@@ -145,3 +195,83 @@ class Client(UserClient):
                 shortest = x
 
         return shortest
+
+    class Node():
+        """A node class for A* Pathfinding"""
+
+        def __init__(self, parent=None, position=None):
+            self.parent = parent
+            self.position = position
+
+            self.g = 0
+            self.h = 0
+            self.f = 0
+
+        def __eq__(self, other):
+            return self.position == other.position
+
+    def astar(self, maze, start, end):
+        """Returns a list of tuples as a path from the given start to the given end in the given maze"""
+
+        start_node = self.Node(None, start)
+        start_node.g = start_node.h = start_node.f = 0
+        end_node = self.Node(None, end)
+        end_node.g = end_node.h = end_node.f = 0
+
+        open_list = []
+        closed_list = []
+
+        open_list.append(start_node)
+
+        while len(open_list) > 0:
+
+            current_node = open_list[0]
+            current_index = 0
+            for index, item in enumerate(open_list):
+                if item.f < current_node.f:
+                    current_node = item
+                    current_index = index
+
+            open_list.pop(current_index)
+            closed_list.append(current_node)
+
+            if current_node == end_node:
+                path = []
+                current = current_node
+                while current is not None:
+                    path.append(current.position)
+                    current = current.parent
+                return path[::-1]
+
+            children = []
+            for new_position in [Vector(0, -1), Vector(0, 1), Vector(-1, 0), Vector(1, 0)]:  # Adjacent squares
+
+                node_position = Vector(current_node.position.x + new_position.x, current_node.position.y + new_position.y)
+
+                if node_position.x > 13 or node_position.x < 0 or node_position.y > 13 or node_position.y < 0:
+                    continue
+
+                if maze.game_map[node_position.y][node_position.x].is_occupied_by(ObjectType.WALL):
+                    continue
+
+                new_node = self.Node(current_node, node_position)
+
+                children.append(new_node)
+
+            for child in children:
+
+                for closed_child in closed_list:
+                    if child == closed_child:
+                        continue
+                child.g = current_node.g + 1
+                child.h = abs(child.position.x - end_node.position.x) + abs(
+                    child.position.y - end_node.position.y)
+                child.f = child.g + child.h
+
+                for open_node in open_list:
+                    if child == open_node and child.g > open_node.g:
+                        continue
+
+                open_list.append(child)
+
+
