@@ -92,6 +92,55 @@ class Client(UserClient):
     def get_my_inventory(self, world):
         return world.inventory_manager.get_inventory(self.company)
 
-    def followMoves(self, tiles):
-        moves = []
-        currentPostion = Avatar.position
+    def invest_in_tech_tree(self, avatar, counter):
+        match counter:
+            case 0:
+                if avatar.science_points >= avatar.get_tech_info('Improved Mining').cost and not avatar.is_researched('Improved Mining'):
+                    return [ActionType.BUY_IMPROVED_DRIVETRAIN], True
+                else:
+                    return None, False
+            case 1:
+                if avatar.science_points >= avatar.get_tech_info('Improved Drivetrain').cost and not avatar.is_researched('Improved Drivetrain'):
+                    return [ActionType.BUY_IMPROVED_DRIVETRAIN], True
+                else:
+                    return None, False
+            case 2:
+                if avatar.science_points >= avatar.get_tech_info('Superior Mining').cost and not avatar.is_researched('Superior Mining'):
+                    return [ActionType.BUY_IMPROVED_DRIVETRAIN], True
+                else:
+                    return None, False
+            case 3:
+                if avatar.science_points >= avatar.get_tech_info('Superior Drivetrain').cost and not avatar.is_researched('Superior Drivetrain'):
+                    return [ActionType.BUY_IMPROVED_DRIVETRAIN], True
+                else:
+                    return None, False
+            case 4:
+                if avatar.science_points >= avatar.get_tech_info('Overdrive Mining').cost and not avatar.is_researched('Overdrive Mining'):
+                    return [ActionType.BUY_IMPROVED_DRIVETRAIN], True
+                else:
+                    return None, False
+            case 5:
+                if avatar.science_points >= avatar.get_tech_info('Overdrive Drivetrain').cost and not avatar.is_researched('Overdrive Drivetrain'):
+                    return [ActionType.BUY_IMPROVED_DRIVETRAIN], True
+                else:
+                    return None, False
+            case 6:
+                if avatar.science_points >= avatar.get_tech_info('Dynamite').cost and not avatar.is_researched('Dynamite'):
+                    return [ActionType.BUY_IMPROVED_DRIVETRAIN], True
+                else:
+                    return None, False
+            case 7:
+                if avatar.science_points >= avatar.get_tech_info('Landmine').cost and not avatar.is_researched('Landmine'):
+                    return [ActionType.BUY_IMPROVED_DRIVETRAIN], True
+                else:
+                    return None, False
+            case 8:
+                if avatar.science_points >= avatar.get_tech_info('EMPs').cost and not avatar.is_researched('EMPs'):
+                    return [ActionType.BUY_IMPROVED_DRIVETRAIN], True
+                else:
+                    return None, False
+            case 9:
+                if avatar.science_points >= avatar.get_tech_info('Trap Defusal').cost and not avatar.is_researched('Trap Defusal'):
+                    return [ActionType.BUY_IMPROVED_DRIVETRAIN], True
+                else:
+                    return None, False
