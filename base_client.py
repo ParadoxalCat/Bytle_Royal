@@ -1,4 +1,5 @@
 import random
+import heapq
 
 from game.client.user_client import UserClient
 from game.common.avatar import Avatar
@@ -9,6 +10,8 @@ from game.utils.vector import Vector
 class State(Enum):
     MINING = auto()
     SELLING = auto()
+    INVESTING = auto()
+    RETURN = auto()
     TEST = auto()
 
 
@@ -22,7 +25,7 @@ class Client(UserClient):
         Allows the team to set a team name.
         :return: Your team name
         """
-        return 'The Real Jean'
+        return 'Error 413'
 
     def first_turn_init(self, world, avatar):
         """
@@ -30,7 +33,7 @@ class Client(UserClient):
         """
         self.company = avatar.company
         self.my_station_type = ObjectType.TURING_STATION if self.company == Company.TURING else ObjectType.CHURCH_STATION
-        self.current_state = State.MINING
+        self.current_state = State.TEST
         self.base_position = world.get_objects(self.my_station_type)[0][0]
 
     # This is where your AI will decide what to do
@@ -47,31 +50,31 @@ class Client(UserClient):
         current_tile = world.game_map[avatar.position.y][
             avatar.position.x]  # set current tuple to the tuple that I'm standing on
 
-        # If I start the turn on my station, I should...
-        if current_tile.occupied_by.object_type == self.my_station_type:
-            # buy Improved Mining tech if I can...
-            if avatar.science_points >= avatar.get_tech_info('Improved Drivetrain').cost and not avatar.is_researched(
-                    'Improved Drivetrain'):
-                return [ActionType.BUY_IMPROVED_DRIVETRAIN]
-            # otherwise set my state to mining
+        if len([item for item in self.get_my_inventory(world) if item is not None]) >= 46:
+            self.current_state = State.RETURN
+        elif current_tile.is_occupied_by_object_type(ObjectType.ORE_OCCUPIABLE_STATION):
             self.current_state = State.MINING
+        else:
+            self.current_state = State.TEST
 
-        # If I have at least 5 items in my inventory, set my state to selling
-        if len([item for item in self.get_my_inventory(world) if item is not None]) >= 5:
-            self.current_state = State.SELLING
 
-        self.current_state = State.TEST
         # Make action decision for this turn
         if self.current_state == State.SELLING:
             # actions = [ActionType.MOVE_LEFT if self.company == Company.TURING else ActionType.MOVE_RIGHT] # If I'm selling, move towards my base
             actions = self.generate_moves(avatar.position, self.base_position, turn % 2 == 0)
-        elif State.TEST:
-            tuples = self.astar(world, avatar.position, Vector(2, 3))
-            actions = self.moveVector(avatar.position, tuples[1])
+        elif self.current_state == State.TEST:
+            tuples = self.astar(world, avatar.position, self.look_for_ore(avatar, world))
+            try:
+                actions = self.moveVector(avatar.position, tuples[1])
+                print(actions)
+            except IndexError:
+                self.current_state = State.MINING
+                print("oopies poopies")
         else:
             if current_tile.occupied_by.object_type == ObjectType.ORE_OCCUPIABLE_STATION:
                 # If I'm mining and I'm standing on an ore, mine it
                 actions = [ActionType.MINE]
+                self.current_state = State.TEST
             else:
                 # If I'm mining and I'm not standing on an ore, move randomly
                 actions = [random.choice(
@@ -98,6 +101,16 @@ class Client(UserClient):
 
     def get_my_inventory(self, world):
         return world.inventory_manager.get_inventory(self.company)
+
+    def moveVector(self, vector, position):
+        if position.x - vector.x == 1:
+            return [ActionType.MOVE_RIGHT,]
+        elif position.x - vector.x == -1:
+            return [ActionType.MOVE_LEFT,]
+        elif position.y - vector.y == -1:
+            return [ActionType.MOVE_UP,]
+        else:
+            return [ActionType.MOVE_DOWN,]
 
     def generate_moves_around(self, tile, world):
         moves = []
@@ -206,11 +219,11 @@ class Client(UserClient):
             self.h = 0
             self.f = 0
 
-        def __eq__(self, other):
-            return self.position == other.position
+        def __eq__(self, dude):
+            return self.position == dude.position
 
     def astar(self, maze, start, end):
-        """Returns a list of tuples as a path from the given start to the given end in the given maze"""
+        """Returns a list of tuples as a path the given start to the given end in the given maze"""
 
         start_node = self.Node(None, start)
         start_node.g = start_node.h = start_node.f = 0
@@ -250,7 +263,7 @@ class Client(UserClient):
                 if node_position.x > 13 or node_position.x < 0 or node_position.y > 13 or node_position.y < 0:
                     continue
 
-                if maze.game_map[node_position.y][node_position.x].is_occupied_by(ObjectType.WALL):
+                if maze.game_map[node_position.y][node_position.x].is_occupied_by_object_type(ObjectType.WALL):
                     continue
 
                 new_node = self.Node(current_node, node_position)
@@ -273,4 +286,15 @@ class Client(UserClient):
 
                 open_list.append(child)
 
+    def look_for_ore(self, avatar, world):
+        nearest_ore = Vector(100, 100)
+        for xCords in range(avatar.position.x - 4, avatar.position.x + 4):
+            for yCords in range(avatar.position.y - 4, avatar.position.y + 4):
+                if 13 >= xCords >= 0 and 13 >= yCords >= 0:
+                    if world.game_map[yCords][xCords].is_occupied_by_object_type(ObjectType.ORE_OCCUPIABLE_STATION):
+                        if self.manHatanDistanc(xCords, yCords, avatar) < self.manHatanDistanc(nearest_ore.x, nearest_ore.y, avatar):
+                            nearest_ore = Vector(xCords, yCords)
+        return nearest_ore
 
+    def manHatanDistanc(self, nodex, nodey, avatar):
+        return abs(avatar.position.x - nodex) + abs(avatar.position.y - nodey)
